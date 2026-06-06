@@ -1,5 +1,5 @@
 """
-Trace plot functionality for Plotsar.
+Trace plot functionality for Nyota.
 """
 
 import numpy as np

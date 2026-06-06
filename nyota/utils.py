@@ -1,6 +1,6 @@
 """
 Utility functions for parameter catalog construction, coordinate
-transforms, and label formatting used throughout Plotsar.
+transforms, and label formatting used throughout Nyota.
 """
 
 import numpy as np

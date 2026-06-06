@@ -1,5 +1,5 @@
 """
-Sky map (Mollweide projection) functionality for Plotsar.
+Sky map (Mollweide projection) functionality for Nyota.
 
 Convention reminder (Prometheus):
     theta  – polar angle from north pole in [0, π]
@@ -50,7 +50,7 @@ def make_skymap(
     catalog : dict
         Parameter catalog from ``build_param_catalog``.
     samples : dict
-        Raw samples dictionary (same dict passed to ``Plotsar``).
+        Raw samples dictionary (same dict passed to ``Nyota``).
     show_pulsars : bool
         Whether to plot pulsar sky positions.
     show_cw_samples : bool
@@ -59,7 +59,7 @@ def make_skymap(
         Whether to overlay 2-D density contours on CW sky-location samples.
     cw_sample_key : str, optional
         Sample key containing the 8-parameter CW parameter array.  If None,
-        Plotsar auto-detects it by looking at the deterministic model name.
+        Nyota auto-detects it by looking at the deterministic model name.
     sky_params : tuple of (str, str), optional
         Pair of flat catalog keys ``(cos_theta_key, phi_key)`` for an
         arbitrary sky location parameter pair to overplot.  Plotted as a

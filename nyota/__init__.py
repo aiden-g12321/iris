@@ -1,17 +1,17 @@
 """
-Plotsar — plotting package for Prometheus PTA analysis outputs.
+Nyota — plotting package for Prometheus PTA analysis outputs.
 
 Quick start::
 
-    from plotsar import Plotsar
+    from nyota import Nyota
 
-    plotter = Plotsar(model, samples)
+    plotter = Nyota(model, samples)
     fig = plotter.corner()
     fig = plotter.trace()
     fig = plotter.skymap()
 """
 
-from .plotter import Plotsar
+from .plotter import Nyota
 from .utils import (
     build_param_catalog,
     build_truths_catalog,
@@ -27,7 +27,7 @@ from .trace import make_trace
 from .skymap import make_skymap
 
 __all__ = [
-    "Plotsar",
+    "Nyota",
     "build_param_catalog",
     "build_truths_catalog",
     "make_corner",

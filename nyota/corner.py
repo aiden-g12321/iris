@@ -1,5 +1,5 @@
 """
-Corner plot functionality for Plotsar.
+Corner plot functionality for Nyota.
 """
 
 import warnings
