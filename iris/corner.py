@@ -132,8 +132,6 @@ def make_corner(
         bins=30,
         quantiles=[0.16, 0.5, 0.84],
     )
-    if n_datasets > 1:
-        base_kw["hist_kwargs"] = {"density": True}
     if corner_kwargs:
         base_kw.update(corner_kwargs)
 
@@ -151,6 +149,8 @@ def make_corner(
         data = np.column_stack([cat[k]["samples"][::thin] for k in selected])
 
         kw = dict(**base_kw, color=color)
+        if n_datasets > 1:
+            kw["hist_kwargs"] = {**kw.get("hist_kwargs", {}), "density": True, "color": color}
 
         # only show truths on the first dataset to avoid clutter
         kw["truths"] = truth_vals if i == 0 else None
