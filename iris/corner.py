@@ -137,6 +137,13 @@ def make_corner(
     if corner_kwargs:
         base_kw.update(corner_kwargs)
 
+    # If both contours and density are disabled, fall back to scatter points
+    # unless the caller explicitly set plot_datapoints themselves.
+    if (not base_kw.get("plot_contours", True)
+            and not base_kw.get("plot_density", True)
+            and "plot_datapoints" not in (corner_kwargs or {})):
+        base_kw["plot_datapoints"] = True
+
     # --- draw datasets ---
     for i, (cat, color, label) in enumerate(zip(all_catalogs, colors, labels)):
         # check which selected params are available in this catalog
