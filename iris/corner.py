@@ -1,5 +1,5 @@
 """
-Corner plot functionality for Nyota.
+Corner plot functionality for Iris.
 """
 
 import warnings

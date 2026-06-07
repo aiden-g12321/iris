@@ -1,6 +1,6 @@
 """
 Utility functions for parameter catalog construction, coordinate
-transforms, and label formatting used throughout Nyota.
+transforms, and label formatting used throughout Iris.
 """
 
 import numpy as np

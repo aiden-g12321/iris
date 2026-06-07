@@ -1,5 +1,5 @@
 """
-Trace plot functionality for Nyota.
+Trace plot functionality for Iris.
 """
 
 import numpy as np

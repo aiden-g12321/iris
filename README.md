@@ -12,7 +12,7 @@ Install directly from GitHub:
 pip install git+https://github.com/aiden-g12321/iris.git
 ```
 
-To install an editable local copy (e.g. while developing alongside Prometheus):
+To install an editable local copy:
 
 ```bash
 git clone https://github.com/aiden-g12321/iris.git
