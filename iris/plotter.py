@@ -230,6 +230,8 @@ class Iris:
             "Run 1", "Run 2", …
         colors : list[str], optional
             Matplotlib color strings, one per dataset.  Auto-assigned if None.
+        legend_fontsize : int or float, optional
+            Font size for the legend in the top-right corner.  Default 10.
         **corner_kwargs
             Additional keyword arguments forwarded to ``corner.corner``.
 
@@ -246,6 +248,7 @@ class Iris:
                 for s in extra_samples
             ]
 
+        legend_fontsize = corner_kwargs.pop("legend_fontsize", 10)
         return make_corner(
             self.catalog,
             params=params,
@@ -255,6 +258,7 @@ class Iris:
             extra_catalogs=extra_catalogs,
             labels=labels,
             colors=colors,
+            legend_fontsize=legend_fontsize,
             corner_kwargs=corner_kwargs or None,
         )
 
