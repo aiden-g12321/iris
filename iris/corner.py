@@ -35,6 +35,7 @@ def make_corner(
     labels: list[str] | None = None,
     colors: list[str] | None = None,
     corner_kwargs: dict | None = None,
+    legend_fontsize: int | float = 10,
 ) -> plt.Figure:
     """
     Make a corner plot, optionally overlaying multiple sample sets.
@@ -71,6 +72,8 @@ def make_corner(
         Additional keyword arguments forwarded to every ``corner.corner``
         call.  Per-dataset color and ``fig`` are set automatically and
         should not be included here.
+    legend_fontsize : int or float, optional
+        Font size for the legend in the top-right corner.  Default 10.
 
     Returns
     -------
@@ -122,15 +125,14 @@ def make_corner(
     axis_labels = [catalog[k]["label"] for k in selected]
     base_kw = dict(
         labels=axis_labels,
-        show_titles=True,
-        title_kwargs={"fontsize": 11},
+        show_titles=False,
         label_kwargs={"fontsize": 11},
         plot_contours=True,
         plot_datapoints=False,
         fill_contours=True,
         smooth=1.0,
         bins=30,
-        quantiles=[0.16, 0.5, 0.84],
+        quantiles=[],
     )
     if corner_kwargs:
         base_kw.update(corner_kwargs)
@@ -155,10 +157,6 @@ def make_corner(
         # only show truths on the first dataset to avoid clutter
         kw["truths"] = truth_vals if i == 0 else None
 
-        # titles/quantiles only make sense on the first (primary) dataset
-        if i > 0:
-            kw["show_titles"] = False
-            kw["quantiles"] = []
 
         if fig is not None or i > 0:
             kw["fig"] = fig
@@ -177,7 +175,7 @@ def make_corner(
         legend_ax.legend(
             handles=handles,
             loc="upper right",
-            fontsize=10,
+            fontsize=legend_fontsize,
             framealpha=0.85,
             borderpad=0.8,
         )
