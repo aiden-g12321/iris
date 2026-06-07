@@ -141,6 +141,9 @@ class Iris:
         if psr_indices is not None:
             selected_names = {self.psr_names[i] for i in psr_indices}
             keys = [k for k in keys if self.catalog[k].get("psr_name") in selected_names]
+        # Group by pulsar so params for each pulsar appear together
+        psr_order = {name: i for i, name in enumerate(self.psr_names)}
+        keys.sort(key=lambda k: psr_order.get(self.catalog[k].get("psr_name"), 0))
         return keys
 
     def gwb_model_params(self) -> list[str]:
