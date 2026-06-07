@@ -31,7 +31,7 @@ def make_corner(
     thin: int = 1,
     truths: dict | None = None,
     fig: plt.Figure | None = None,
-    extra_catalogs: list[dict] | None = None,
+    extra_catalogs: list[dict] | dict | None = None,
     labels: list[str] | None = None,
     colors: list[str] | None = None,
     corner_kwargs: dict | None = None,
@@ -52,12 +52,14 @@ def make_corner(
         ``{flat_key: truth_value}`` drawn as dashed lines on the plot.
     fig : matplotlib Figure, optional
         Existing figure to draw into.
-    extra_catalogs : list of dict, optional
-        Additional parameter catalogs (built from other sample dicts via
-        ``build_param_catalog``) to overlay on the same corner plot.
+    extra_catalogs : dict or list of dict, optional
+        Additional parameter catalog(s) to overlay on the same corner plot.
+        A single dict may be passed directly (no wrapping list needed).
         Each catalog is drawn in a different color.  Catalogs that are
         missing any of the selected parameters for a run are skipped for
-        that run with a warning.
+        that run with a warning.  When multiple datasets are present,
+        histograms are automatically normalised (``density=True``) so that
+        different sample sizes are visually comparable.
     labels : list of str, optional
         Legend labels, one per dataset in order: primary first, then each
         entry in ``extra_catalogs``.  If None, datasets are labelled
@@ -80,6 +82,8 @@ def make_corner(
             "Install it with: pip install corner"
         )
 
+    if isinstance(extra_catalogs, dict):
+        extra_catalogs = [extra_catalogs]
     extra_catalogs = extra_catalogs or []
     all_catalogs = [catalog] + list(extra_catalogs)
     n_datasets = len(all_catalogs)
@@ -128,6 +132,8 @@ def make_corner(
         bins=30,
         quantiles=[0.16, 0.5, 0.84],
     )
+    if n_datasets > 1:
+        base_kw["hist_kwargs"] = {"density": True}
     if corner_kwargs:
         base_kw.update(corner_kwargs)
 
