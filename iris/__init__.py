@@ -1,17 +1,17 @@
 """
-Nyota — plotting package for Prometheus PTA analysis outputs.
+Iris — plotting package for Prometheus PTA analysis outputs.
 
 Quick start::
 
-    from nyota import Nyota
+    from iris import Iris
 
-    plotter = Nyota(model, samples)
+    plotter = Iris(model, samples)
     fig = plotter.corner()
     fig = plotter.trace()
     fig = plotter.skymap()
 """
 
-from .plotter import Nyota
+from .plotter import Iris
 from .utils import (
     build_param_catalog,
     build_truths_catalog,
@@ -27,7 +27,7 @@ from .trace import make_trace
 from .skymap import make_skymap
 
 __all__ = [
-    "Nyota",
+    "Iris",
     "build_param_catalog",
     "build_truths_catalog",
     "make_corner",

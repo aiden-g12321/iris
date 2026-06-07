@@ -1,22 +1,22 @@
-# Nyota
+# Iris
 
-**Nyota is a plotting package designed exclusively for [Prometheus](https://github.com/XGI-MSU/prometheus) PTA analysis outputs.** It is not a general-purpose plotting library — it is built around Prometheus's `PTAModel` object and the MCMC sample dictionaries that Prometheus produces. Nyota reads your model directly to figure out pulsar names, sky locations, parameter shapes, and constituent sub-models (`psr_model`, `gwb_model`, `det_model`), so you spend your time looking at results rather than wrangling labels and array indices.
+**Iris is a plotting package designed exclusively for [Prometheus](https://github.com/XGI-MSU/prometheus) PTA analysis outputs.** It is not a general-purpose plotting library — it is built around Prometheus's `PTAModel` object and the MCMC sample dictionaries that Prometheus produces. Iris reads your model directly to figure out pulsar names, sky locations, parameter shapes, and constituent sub-models (`psr_model`, `gwb_model`, `det_model`), so you spend your time looking at results rather than wrangling labels and array indices.
 
-> **Requirement:** Nyota expects a Prometheus `PTAModel` instance and a sample dictionary as returned by NumPyro / the Prometheus utility functions. It will not work meaningfully without them.
+> **Requirement:** Iris expects a Prometheus `PTAModel` instance and a sample dictionary as returned by NumPyro / the Prometheus utility functions. It will not work meaningfully without them.
 
 ## Installation
 
 Install directly from GitHub:
 
 ```bash
-pip install git+https://github.com/aiden-g12321/nyota.git
+pip install git+https://github.com/aiden-g12321/iris.git
 ```
 
 To install an editable local copy (e.g. while developing alongside Prometheus):
 
 ```bash
-git clone https://github.com/aiden-g12321/nyota.git
-cd nyota
+git clone https://github.com/aiden-g12321/iris.git
+cd iris
 pip install -e .
 ```
 
@@ -25,12 +25,12 @@ pip install -e .
 ## Quick start
 
 ```python
-from nyota import Nyota
+from iris import Iris
 
 # model   — a Prometheus PTAModel
 # samples — dict returned by NumPyro / prometheus.utilities.load_chain()
 
-plotter = Nyota(model, samples)
+plotter = Iris(model, samples)
 
 # Corner plot of all inferred parameters (auto-labelled from the PTAModel)
 fig = plotter.corner()
@@ -44,7 +44,7 @@ fig = plotter.skymap()
 
 ## Selecting parameters by model
 
-Because Nyota has access to the `PTAModel`, you never need to type pulsar names or remember parameter orderings. Use the model-level helpers to select parameters by which sub-model they belong to:
+Because Iris has access to the `PTAModel`, you never need to type pulsar names or remember parameter orderings. Use the model-level helpers to select parameters by which sub-model they belong to:
 
 ```python
 # All GWB parameters (reads model.gwb_model.name automatically)
@@ -101,7 +101,7 @@ fig = plotter.corner(
 
 ## Injected / truth values
 
-Supply a `truths` dict at construction time using the same key-value format as the samples dictionary. Nyota converts it automatically to the flat catalog format and uses it as the default for all subsequent plots:
+Supply a `truths` dict at construction time using the same key-value format as the samples dictionary. Iris converts it automatically to the flat catalog format and uses it as the default for all subsequent plots:
 
 ```python
 truths = {
@@ -112,7 +112,7 @@ truths = {
     'cw_source': np.array([9.0, -8.5, 0.0, 0.5, -14.8, 0.3, 1.2, 0.0]),
 }
 
-plotter = Nyota(model, samples, truths=truths)
+plotter = Iris(model, samples, truths=truths)
 
 # Truth lines are drawn automatically on all plots
 fig = plotter.corner(params=params)
@@ -149,10 +149,10 @@ fig = plotter.skymap(sky_params=('my_model_cos_gwtheta', 'my_model_gwphi'))
 
 ## Custom parameter names
 
-Nyota infers parameter names from array shape (8-param → standard CW names, 2-param → power-law names). Override with `param_names`:
+Iris infers parameter names from array shape (8-param → standard CW names, 2-param → power-law names). Override with `param_names`:
 
 ```python
-plotter = Nyota(model, samples, param_names={
+plotter = Iris(model, samples, param_names={
     'psr_noise': ['log10_A', 'gamma'],
     'cw_source': ['log10_mc', 'log10_fgw', 'cos_inc', 'psi',
                   'log10_h', 'cos_gwtheta', 'gwphi', 'phase0'],

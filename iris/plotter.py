@@ -1,5 +1,5 @@
 """
-Main Nyota class — entry point for all Prometheus-specific plots.
+Main Iris class — entry point for all Prometheus-specific plots.
 """
 
 from __future__ import annotations
@@ -13,11 +13,11 @@ from .trace import make_trace
 from .skymap import make_skymap
 
 
-class Nyota:
+class Iris:
     """
     Plotting interface for Prometheus PTAModel MCMC outputs.
 
-    Given a PTAModel and a dictionary of MCMC samples Nyota automatically
+    Given a PTAModel and a dictionary of MCMC samples Iris automatically
     introspects model structure (pulsar names, sky locations, parameter shapes)
     to build labelled corner plots, trace plots, and sky maps with minimal
     user input.
@@ -60,7 +60,7 @@ class Nyota:
     --------
     Minimal usage::
 
-        plotter = Nyota(model, samples)
+        plotter = Iris(model, samples)
 
         # Corner plot of all GWB and noise parameters
         fig = plotter.corner()
@@ -213,11 +213,11 @@ class Nyota:
             Existing figure to draw into.
         extra_samples : list of dict, optional
             Additional sample dictionaries from other runs, each in the
-            same raw format as the ``samples`` dict passed to ``Nyota``
+            same raw format as the ``samples`` dict passed to ``Iris``
             (i.e. ``{sample_key: array(nsamples, ...)}``) — they do **not**
             need to have the same keys or shapes as the primary samples.
             Each is built into a temporary catalog using the same model and
-            ``param_names`` as the primary ``Nyota`` instance.  Datasets
+            ``param_names`` as the primary ``Iris`` instance.  Datasets
             where any of the selected parameters are absent are skipped with
             a warning.
         labels : list of str, optional
