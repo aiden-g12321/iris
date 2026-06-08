@@ -95,10 +95,14 @@ def build_param_catalog(model, samples: dict, param_names: dict | None = None) -
             # fall back to power-law names when shape matches
             if len(per_psr_names) == nparams and nparams == 2 and key not in user_names:
                 per_psr_names = POWERLAW_PARAM_NAMES
+            free_spectral = nparams > 2 and key not in user_names
             for pi, pname in enumerate(per_psr_names[:nparams]):
                 for psi, psrname in enumerate(psr_names):
                     flat_name = f"{key}_{psrname}_{pname}"
-                    label = _make_label(key, pname, psrname)
+                    if free_spectral:
+                        label = _free_spectral_label(pi, psrname)
+                    else:
+                        label = _make_label(key, pname, psrname)
                     catalog[flat_name] = {
                         "label": label,
                         "samples": arr[:, psi, pi],
@@ -106,6 +110,7 @@ def build_param_catalog(model, samples: dict, param_names: dict | None = None) -
                         "param_idx": pi,
                         "psr_idx": psi,
                         "psr_name": psrname,
+                        "free_spectral": free_spectral,
                     }
 
         # --- per-pulsar 1-D array: (nsamples, npsrs) ---
@@ -125,14 +130,19 @@ def build_param_catalog(model, samples: dict, param_names: dict | None = None) -
         elif arr.ndim == 2:
             nparams = arr.shape[1]
             names_for_key = _resolve_param_names(key, nparams, user_names)
+            free_spectral = nparams > 2 and key not in user_names
             for pi, pname in enumerate(names_for_key):
                 flat_name = f"{key}_{pname}" if pname != key else pname
-                label = _make_label(key, pname, None)
+                if free_spectral:
+                    label = _free_spectral_label(pi, None)
+                else:
+                    label = _make_label(key, pname, None)
                 catalog[flat_name] = {
                     "label": label,
                     "samples": arr[:, pi],
                     "key": key,
                     "param_idx": pi,
+                    "free_spectral": free_spectral,
                 }
 
         # --- scalar per sample: (nsamples,) ---
@@ -158,6 +168,14 @@ def _resolve_param_names(key: str, nparams: int, user_names: dict) -> list:
     if nparams == len(POWERLAW_PARAM_NAMES):
         return POWERLAW_PARAM_NAMES
     return [f"p{i}" for i in range(nparams)]
+
+
+def _free_spectral_label(pi: int, psrname: str | None) -> str:
+    """Return a LaTeX label for free-spectral bin *pi*."""
+    base = rf"$\log_{{10}}\rho_{{{pi}}}$"
+    if psrname:
+        return base + rf"$\;\;[{psrname}]$"
+    return base + r"$\;\;[\mathrm{GWB}]$"
 
 
 def _make_label(key: str, pname: str | None, psrname: str | None) -> str:

@@ -125,7 +125,11 @@ class Iris:
         selected_names = {self.psr_names[i] for i in indices}
         return [k for k, v in self.catalog.items() if v.get("psr_name") in selected_names]
 
-    def psr_model_params(self, psr_indices: list[int] | None = None) -> list[str]:
+    def psr_model_params(
+        self,
+        psr_indices: list[int] | None = None,
+        psr_index: int | None = None,
+    ) -> list[str]:
         """
         Return flat catalog keys for the pulsar noise model (``model.psr_model``).
 
@@ -134,7 +138,12 @@ class Iris:
         psr_indices : list of int, optional
             Restrict to these pulsar indices.  If None, returns params for all
             pulsars.
+        psr_index : int, optional
+            Convenience singular form — equivalent to ``psr_indices=[psr_index]``.
+            Ignored when *psr_indices* is also given.
         """
+        if psr_indices is None and psr_index is not None:
+            psr_indices = [psr_index]
         if not hasattr(self.model, "psr_model") or self.model.psr_model is None:
             return []
         key = self.model.psr_model.name
@@ -310,15 +319,14 @@ class Iris:
 
     def violin(
         self,
-        key: str,
-        psr_index: int | None = None,
+        params: list[str],
         extra_samples: list[dict] | dict | None = None,
         labels: list[str] | None = None,
         colors: list[str] | None = None,
         figsize: tuple = (10, 5),
         title: str | None = None,
         xlabel: str = "frequency bin",
-        ylabel: str = r"$\log_{10}|\mathrm{PSD}\;\;[\mathrm{s}^2]|$",
+        ylabel: str | None = None,
         legend_fontsize: int | float = 12,
         widths: float = 0.8,
         fig: plt.Figure | None = None,
@@ -327,21 +335,20 @@ class Iris:
         """
         Make a violin plot for a free-spectral GWB or pulsar-noise model.
 
-        The shape of ``samples[key]`` is used to detect the model type:
-
-        * ``(nsamples, nfreqs)`` with ``nfreqs > 2`` — GWB free spectral.
-        * ``(nsamples, npsrs, nfreqs)`` with ``nfreqs > 2`` — per-pulsar free
-          spectral; *psr_index* selects which pulsar to plot.
-        * Any array with last dimension ≤ 2 is assumed to be a power-law model
-          and a ``ValueError`` is raised.
+        Pass the list of flat catalog keys returned by
+        ``plotter.gwb_model_params()`` or
+        ``plotter.psr_model_params(psr_index=5)`` as *params* — the same
+        format used by ``corner()``.  Each key corresponds to one frequency
+        bin; its posterior samples become one violin.
 
         Parameters
         ----------
-        key : str
-            Sample-site key (e.g. ``'gwb_params'`` or ``'psr_params'``).
-        psr_index : int, optional
-            Index into the pulsar axis for per-pulsar free-spectral arrays.
-            Required when the sample array is 3-D.
+        params : list of str
+            Flat catalog keys to plot, one per frequency bin.  Obtain them
+            with ``plotter.gwb_model_params()`` or
+            ``plotter.psr_model_params(psr_index=N)``.  Only free-spectral
+            params (more than 2 bins) are accepted; power-law params raise a
+            ``ValueError``.
         extra_samples : list of dict or dict, optional
             Additional raw sample dicts (same format as the ``samples`` dict
             passed to ``Iris``).  A single dict may be passed without wrapping
@@ -358,8 +365,10 @@ class Iris:
             Figure title.
         xlabel : str
             x-axis label.  Default ``'frequency bin'``.
-        ylabel : str
-            y-axis label.
+        ylabel : str, optional
+            y-axis label.  Auto-inferred from the param metadata
+            (``$\\log_{{10}}\\rho_i\\;\\;[\\mathrm{{GWB}}]$`` or the pulsar
+            name) when not supplied.
         legend_fontsize : int or float
             Font size of the legend.  Default 12.
         widths : float
@@ -373,43 +382,53 @@ class Iris:
         -------
         fig : matplotlib Figure
         """
+        if not params:
+            raise ValueError("params must be a non-empty list of flat catalog keys.")
+        if len(params) <= 2:
+            raise ValueError(
+                f"Only {len(params)} param(s) selected — this looks like a "
+                "power-law model. Violin plots require free-spectral params "
+                "(more than 2 frequency bins)."
+            )
+
+        # validate all keys exist in the primary catalog
+        missing = [k for k in params if k not in self.catalog]
+        if missing:
+            raise KeyError(f"Param key(s) not found in catalog: {missing}")
+
+        # --- infer default ylabel from catalog metadata ---
+        if ylabel is None:
+            meta = self.catalog[params[0]]
+            psr_name = meta.get("psr_name")
+            if psr_name:
+                ylabel = rf"$\log_{{10}}\rho_i\;\;[{psr_name}]$"
+            else:
+                ylabel = r"$\log_{10}\rho_i\;\;[\mathrm{GWB}]$"
+
+        # --- build primary dataset from catalog ---
+        primary_data = np.column_stack(
+            [self.catalog[k]["samples"] for k in params]
+        )  # (nsamples, nfreqs)
+
+        # --- build extra datasets from raw sample dicts ---
         if isinstance(extra_samples, dict):
             extra_samples = [extra_samples]
         extra_samples = extra_samples or []
 
-        all_raw = [self.samples] + list(extra_samples)
-        datasets = []
-        for raw in all_raw:
-            if key not in raw:
-                raise KeyError(
-                    f"Sample key '{key}' not found. Available keys: {list(raw.keys())}"
+        datasets = [primary_data]
+        for raw in extra_samples:
+            tmp_catalog = build_param_catalog(self.model, raw, self._param_names)
+            extra_missing = [k for k in params if k not in tmp_catalog]
+            if extra_missing:
+                import warnings
+                warnings.warn(
+                    f"Extra sample set is missing param(s) {extra_missing} — skipping.",
+                    stacklevel=2,
                 )
-            arr = np.array(raw[key])  # (nsamples, nfreqs) or (nsamples, npsrs, nfreqs)
-
-            # per-pulsar 3-D array
-            if arr.ndim == 3:
-                if psr_index is None:
-                    raise ValueError(
-                        f"samples['{key}'] has shape {arr.shape} (per-pulsar). "
-                        "Provide psr_index to select a pulsar."
-                    )
-                arr = arr[:, psr_index, :]  # (nsamples, nfreqs)
-
-            if arr.ndim != 2:
-                raise ValueError(
-                    f"Expected a 2-D or 3-D sample array for key '{key}', "
-                    f"got shape {arr.shape}."
-                )
-
-            nfreqs = arr.shape[1]
-            if nfreqs <= 2:
-                raise ValueError(
-                    f"samples['{key}'] has only {nfreqs} frequency bin(s) — "
-                    "this looks like a power-law model, not a free-spectral model. "
-                    "Violin plots are only meaningful for free-spectral posteriors."
-                )
-
-            datasets.append(arr)
+                continue
+            datasets.append(
+                np.column_stack([tmp_catalog[k]["samples"] for k in params])
+            )
 
         return make_violin(
             datasets=datasets,
