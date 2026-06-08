@@ -9,6 +9,7 @@ Quick start::
     fig = plotter.corner()
     fig = plotter.trace()
     fig = plotter.skymap()
+    fig = plotter.violin('gwb_params')
 """
 
 from .plotter import Iris
@@ -25,6 +26,7 @@ from .utils import (
 from .corner import make_corner
 from .trace import make_trace
 from .skymap import make_skymap
+from .violin import make_violin
 
 __all__ = [
     "Iris",
@@ -33,6 +35,7 @@ __all__ = [
     "make_corner",
     "make_trace",
     "make_skymap",
+    "make_violin",
     "CW_PARAM_NAMES",
     "CW_PARAM_LABELS",
     "POWERLAW_PARAM_NAMES",

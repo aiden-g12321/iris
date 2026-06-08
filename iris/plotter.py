@@ -11,6 +11,7 @@ from .utils import build_param_catalog, build_truths_catalog
 from .corner import make_corner
 from .trace import make_trace
 from .skymap import make_skymap
+from .violin import make_violin
 
 
 class Iris:
@@ -305,6 +306,123 @@ class Iris:
             figsize=figsize,
             ncols=ncols,
             plot_kwargs=plot_kwargs or None,
+        )
+
+    def violin(
+        self,
+        key: str,
+        psr_index: int | None = None,
+        extra_samples: list[dict] | dict | None = None,
+        labels: list[str] | None = None,
+        colors: list[str] | None = None,
+        figsize: tuple = (10, 5),
+        title: str | None = None,
+        xlabel: str = "frequency bin",
+        ylabel: str = r"$\log_{10}|\mathrm{PSD}\;\;[\mathrm{s}^2]|$",
+        legend_fontsize: int | float = 12,
+        widths: float = 0.8,
+        fig: plt.Figure | None = None,
+        ax=None,
+    ) -> plt.Figure:
+        """
+        Make a violin plot for a free-spectral GWB or pulsar-noise model.
+
+        The shape of ``samples[key]`` is used to detect the model type:
+
+        * ``(nsamples, nfreqs)`` with ``nfreqs > 2`` — GWB free spectral.
+        * ``(nsamples, npsrs, nfreqs)`` with ``nfreqs > 2`` — per-pulsar free
+          spectral; *psr_index* selects which pulsar to plot.
+        * Any array with last dimension ≤ 2 is assumed to be a power-law model
+          and a ``ValueError`` is raised.
+
+        Parameters
+        ----------
+        key : str
+            Sample-site key (e.g. ``'gwb_params'`` or ``'psr_params'``).
+        psr_index : int, optional
+            Index into the pulsar axis for per-pulsar free-spectral arrays.
+            Required when the sample array is 3-D.
+        extra_samples : list of dict or dict, optional
+            Additional raw sample dicts (same format as the ``samples`` dict
+            passed to ``Iris``).  A single dict may be passed without wrapping
+            it in a list.
+        labels : list of str, optional
+            Legend labels, one per dataset — primary first, then each entry in
+            ``extra_samples``.  Defaults to "Run 1", "Run 2", … when more than
+            one dataset is present.
+        colors : list of str, optional
+            Matplotlib colour strings, one per dataset.  Auto-assigned if None.
+        figsize : tuple, optional
+            ``(width, height)`` in inches.  Default ``(10, 5)``.
+        title : str, optional
+            Figure title.
+        xlabel : str
+            x-axis label.  Default ``'frequency bin'``.
+        ylabel : str
+            y-axis label.
+        legend_fontsize : int or float
+            Font size of the legend.  Default 12.
+        widths : float
+            Width of each violin body.  Default 0.8.
+        fig : matplotlib Figure, optional
+            Existing figure to draw into.
+        ax : matplotlib Axes, optional
+            Existing axes to draw into.
+
+        Returns
+        -------
+        fig : matplotlib Figure
+        """
+        if isinstance(extra_samples, dict):
+            extra_samples = [extra_samples]
+        extra_samples = extra_samples or []
+
+        all_raw = [self.samples] + list(extra_samples)
+        datasets = []
+        for raw in all_raw:
+            if key not in raw:
+                raise KeyError(
+                    f"Sample key '{key}' not found. Available keys: {list(raw.keys())}"
+                )
+            arr = np.array(raw[key])  # (nsamples, nfreqs) or (nsamples, npsrs, nfreqs)
+
+            # per-pulsar 3-D array
+            if arr.ndim == 3:
+                if psr_index is None:
+                    raise ValueError(
+                        f"samples['{key}'] has shape {arr.shape} (per-pulsar). "
+                        "Provide psr_index to select a pulsar."
+                    )
+                arr = arr[:, psr_index, :]  # (nsamples, nfreqs)
+
+            if arr.ndim != 2:
+                raise ValueError(
+                    f"Expected a 2-D or 3-D sample array for key '{key}', "
+                    f"got shape {arr.shape}."
+                )
+
+            nfreqs = arr.shape[1]
+            if nfreqs <= 2:
+                raise ValueError(
+                    f"samples['{key}'] has only {nfreqs} frequency bin(s) — "
+                    "this looks like a power-law model, not a free-spectral model. "
+                    "Violin plots are only meaningful for free-spectral posteriors."
+                )
+
+            datasets.append(arr)
+
+        return make_violin(
+            datasets=datasets,
+            labels=labels,
+            colors=colors,
+            figsize=figsize,
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            legend_fontsize=legend_fontsize,
+            widths=widths,
+            fig=fig,
+            ax=ax,
         )
 
     def skymap(
