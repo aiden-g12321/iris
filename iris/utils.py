@@ -171,11 +171,11 @@ def _resolve_param_names(key: str, nparams: int, user_names: dict) -> list:
 
 
 def _free_spectral_label(pi: int, psrname: str | None) -> str:
-    """Return a LaTeX label for free-spectral bin *pi*."""
-    base = rf"$\log_{{10}}\rho_{{{pi}}}$"
+    """Return a LaTeX label for free-spectral bin *pi* (1-based)."""
+    idx = pi + 1
     if psrname:
-        return base + rf"$\;\;[{psrname}]$"
-    return base + r"$\;\;[\mathrm{GWB}]$"
+        return rf"$\log_{{10}}\rho_{{{idx}}}\;\;[{psrname}]$"
+    return rf"$\log_{{10}}\rho_{{{idx}}}\;\;[\mathrm{{GWB}}]$"
 
 
 def _make_label(key: str, pname: str | None, psrname: str | None) -> str:

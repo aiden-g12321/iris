@@ -76,9 +76,9 @@ def make_violin(
     if ax is None:
         ax = fig.gca() if fig.axes else fig.add_subplot(111)
 
-    # x positions: 0-based frequency-bin indices
+    # x positions: 1-based frequency-bin indices
     nfreqs = datasets[0].shape[1]
-    positions = np.arange(nfreqs)
+    positions = np.arange(1, nfreqs + 1)
 
     # --- draw ---
     if n == 1:

@@ -401,9 +401,9 @@ class Iris:
             meta = self.catalog[params[0]]
             psr_name = meta.get("psr_name")
             if psr_name:
-                ylabel = rf"$\log_{{10}}\rho_i\;\;[{psr_name}]$"
+                ylabel = rf"$\log_{{10}}|\mathrm{{PSD}}\;\;[\mathrm{{s}}^2]|\;\;[{psr_name}]$"
             else:
-                ylabel = r"$\log_{10}\rho_i\;\;[\mathrm{GWB}]$"
+                ylabel = r"$\log_{10}|\mathrm{PSD}\;\;[\mathrm{s}^2]|\;\;[\mathrm{GWB}]$"
 
         # --- build primary dataset from catalog ---
         primary_data = np.column_stack(
