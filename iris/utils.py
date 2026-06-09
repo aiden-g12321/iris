@@ -130,7 +130,9 @@ def build_param_catalog(model, samples: dict, param_names: dict | None = None) -
         elif arr.ndim == 2:
             nparams = arr.shape[1]
             names_for_key = _resolve_param_names(key, nparams, user_names)
-            free_spectral = nparams > 2 and key not in user_names
+            # free-spectral only when names were auto-generated (p0, p1, ...)
+            # i.e. _resolve_param_names didn't match any known model (CW, power-law, etc.)
+            free_spectral = all(n == f"p{i}" for i, n in enumerate(names_for_key))
             for pi, pname in enumerate(names_for_key):
                 flat_name = f"{key}_{pname}" if pname != key else pname
                 if free_spectral:
