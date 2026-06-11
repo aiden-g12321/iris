@@ -156,6 +156,106 @@ class Iris:
         keys.sort(key=lambda k: psr_order.get(self.catalog[k].get("psr_name"), 0))
         return keys
 
+    def _per_psr_key_params(
+        self,
+        key: str,
+        psr_indices: list[int] | None = None,
+        psr_index: int | None = None,
+    ) -> list[str]:
+        """Return flat catalog keys for per-pulsar sample-site *key*, ordered by pulsar."""
+        if psr_indices is None and psr_index is not None:
+            psr_indices = [psr_index]
+        if psr_indices is None:
+            psr_indices = list(range(self.npsrs))
+        keys = []
+        for i in psr_indices:
+            psrname = self.psr_names[i]
+            keys.extend(
+                k for k, v in self.catalog.items()
+                if v.get("key") == key and v.get("psr_name") == psrname
+            )
+        return keys
+
+    def psr_phase_params(
+        self,
+        psr_indices: list[int] | None = None,
+        psr_index: int | None = None,
+    ) -> list[str]:
+        """
+        Return flat catalog keys for the per-pulsar CW phase parameters
+        (sample key ``'psr_phases'``, shape ``(nsamples, npsrs)``).
+
+        Parameters
+        ----------
+        psr_indices : list of int, optional
+            Restrict to these pulsar indices.  If None, returns params for
+            all pulsars.
+        psr_index : int, optional
+            Convenience singular form — equivalent to
+            ``psr_indices=[psr_index]``.  Ignored when *psr_indices* is given.
+
+        Example
+        -------
+        >>> plotter.corner(plotter.psr_phase_params([0, 3]))
+        """
+        return self._per_psr_key_params("psr_phases", psr_indices, psr_index)
+
+    def psr_dist_params(
+        self,
+        psr_indices: list[int] | None = None,
+        psr_index: int | None = None,
+    ) -> list[str]:
+        """
+        Return flat catalog keys for the per-pulsar distance parameters
+        (sample key ``'psr_dists'``, shape ``(nsamples, npsrs)``).
+
+        Parameters
+        ----------
+        psr_indices : list of int, optional
+            Restrict to these pulsar indices.  If None, returns params for
+            all pulsars.
+        psr_index : int, optional
+            Convenience singular form — equivalent to
+            ``psr_indices=[psr_index]``.  Ignored when *psr_indices* is given.
+
+        Example
+        -------
+        >>> plotter.corner(plotter.psr_dist_params([0, 3]))
+        """
+        return self._per_psr_key_params("psr_dists", psr_indices, psr_index)
+
+    def psr_dist_phase_params(
+        self,
+        psr_indices: list[int] | None = None,
+        psr_index: int | None = None,
+    ) -> list[str]:
+        """
+        Return flat catalog keys interleaving distance and phase per pulsar:
+        ``(dist1, phase1, dist2, phase2, ...)`` for the selected pulsars.
+
+        Parameters
+        ----------
+        psr_indices : list of int, optional
+            Restrict to these pulsar indices.  If None, returns params for
+            all pulsars.
+        psr_index : int, optional
+            Convenience singular form — equivalent to
+            ``psr_indices=[psr_index]``.  Ignored when *psr_indices* is given.
+
+        Example
+        -------
+        >>> plotter.corner(plotter.psr_dist_phase_params(psr_indices=[0, 3]))
+        """
+        if psr_indices is None and psr_index is not None:
+            psr_indices = [psr_index]
+        if psr_indices is None:
+            psr_indices = list(range(self.npsrs))
+        keys = []
+        for i in psr_indices:
+            keys.extend(self._per_psr_key_params("psr_dists", [i]))
+            keys.extend(self._per_psr_key_params("psr_phases", [i]))
+        return keys
+
     def gwb_model_params(self) -> list[str]:
         """Return flat catalog keys for the GWB model (``model.gwb_model``)."""
         if not hasattr(self.model, "gwb_model") or self.model.gwb_model is None:

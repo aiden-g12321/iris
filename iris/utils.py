@@ -32,6 +32,12 @@ CW_PARAM_LABELS = [
     r"$\phi_0$",
 ]
 
+# Per-pulsar CW deterministic-model keys and their LaTeX labels
+PER_PSR_CW_LABELS = {
+    "psr_phases": r"$\Phi$",
+    "psr_dists": r"$L\;\;[\mathrm{kpc}]$",
+}
+
 # Power-law spectrum param names / labels (2-param model)
 POWERLAW_PARAM_NAMES = ["log10_A", "gamma"]
 POWERLAW_PARAM_LABELS = [r"$\log_{10}A$", r"$\gamma$"]
@@ -189,6 +195,8 @@ def _make_label(key: str, pname: str | None, psrname: str | None) -> str:
         base = POWERLAW_PARAM_LABELS[POWERLAW_PARAM_NAMES.index(pname)]
     elif pname is not None:
         base = _latex_label(pname)
+    elif key in PER_PSR_CW_LABELS:
+        base = PER_PSR_CW_LABELS[key]
     else:
         base = _latex_label(key)
 
