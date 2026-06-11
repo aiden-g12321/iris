@@ -80,10 +80,8 @@ def convert_QuickCW_samples(filepath, pta_model, prune_domain=True):
     psr_phases = np.array([samples[:, par_names.index(f'{p}_cw0_p_phase')]
                         for p in psr_names]).T
 
-    psr_dists_standard = np.array([samples[:, par_names.index(f'{p}_cw0_p_dist')]
+    psr_dists = np.array([samples[:, par_names.index(f'{p}_cw0_p_dist')]
                         for p in psr_names]).T
-    psr_dists = pta_model.data.psr_dists_measured[None, :] + \
-        pta_model.data.psr_dists_std[None, :] * psr_dists_standard
 
     quickCW_samples_dict['psr_phases'] = psr_phases[mask]
     quickCW_samples_dict['psr_dists'] = psr_dists[mask]
