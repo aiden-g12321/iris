@@ -158,11 +158,17 @@ class Iris:
 
     def _per_psr_key_params(
         self,
-        key: str,
+        key: str | tuple[str, ...],
         psr_indices: list[int] | None = None,
         psr_index: int | None = None,
     ) -> list[str]:
-        """Return flat catalog keys for per-pulsar sample-site *key*, ordered by pulsar."""
+        """
+        Return flat catalog keys for per-pulsar sample-site *key*, ordered by
+        pulsar.  *key* may be a tuple of aliases (e.g. singular and plural
+        spellings); the first alias present in the samples is used.
+        """
+        aliases = (key,) if isinstance(key, str) else key
+        key = next((a for a in aliases if a in self.samples), aliases[0])
         if psr_indices is None and psr_index is not None:
             psr_indices = [psr_index]
         if psr_indices is None:
@@ -198,7 +204,7 @@ class Iris:
         -------
         >>> plotter.corner(plotter.psr_phase_params([0, 3]))
         """
-        return self._per_psr_key_params("psr_phases", psr_indices, psr_index)
+        return self._per_psr_key_params(("psr_phases", "psr_phase"), psr_indices, psr_index)
 
     def psr_dist_params(
         self,
@@ -222,7 +228,7 @@ class Iris:
         -------
         >>> plotter.corner(plotter.psr_dist_params([0, 3]))
         """
-        return self._per_psr_key_params("psr_dists", psr_indices, psr_index)
+        return self._per_psr_key_params(("psr_dists", "psr_dist"), psr_indices, psr_index)
 
     def psr_dist_phase_params(
         self,
@@ -252,8 +258,8 @@ class Iris:
             psr_indices = list(range(self.npsrs))
         keys = []
         for i in psr_indices:
-            keys.extend(self._per_psr_key_params("psr_dists", [i]))
-            keys.extend(self._per_psr_key_params("psr_phases", [i]))
+            keys.extend(self._per_psr_key_params(("psr_dists", "psr_dist"), [i]))
+            keys.extend(self._per_psr_key_params(("psr_phases", "psr_phase"), [i]))
         return keys
 
     def gwb_model_params(self) -> list[str]:

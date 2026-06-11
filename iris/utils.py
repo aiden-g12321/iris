@@ -36,6 +36,8 @@ CW_PARAM_LABELS = [
 PER_PSR_CW_LABELS = {
     "psr_phases": r"$\Phi$",
     "psr_dists": r"$L\;\;[\mathrm{kpc}]$",
+    "psr_phase": r"$\Phi$",
+    "psr_dist": r"$L\;\;[\mathrm{kpc}]$",
 }
 
 # Power-law spectrum param names / labels (2-param model)
